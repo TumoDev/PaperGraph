@@ -3,10 +3,15 @@ from app import Paper
 from app import GPT
 from app.Node import Node
 from app.Interfaz.GraphVisualizer import GraphVisualizer
+from app.Interfaz.UploadPaper import UploadPaper
 import tkinter as tk
 
 
 def main():
+    print("a")
+    app = UploadPaper()
+    app.run()
+    """
     #iniciar el objeto paper
     #ruta_paper = ".\\assets\\input_paper\\paper_main.pdf"
     paper_main=Paper(name="Interval Branch-and-Bound algorithms for optimization and constraint satisfaction: a survey and prospects",
@@ -21,10 +26,10 @@ def main():
     
     """
     #descargar papers
-    list_papers=paper_main.references
-    for paper in list_papers:
-        if not paper.download_paper():
-            paper_main.references.remove(paper)
+    #list_papers=paper_main.references
+    #for paper in list_papers:
+    #    if not paper.download_paper():
+    #        paper_main.references.remove(paper)
     """
 
     #buscar contribuciones y graficar
@@ -39,10 +44,10 @@ def main():
     rate=[]
 
     """
-    for i in range(0,len(contributions),3):
-        names.append(contributions[i])
-        authors.append(contributions[i+1])
-        rate.append(contributions[i+2])
+    #for i in range(0,len(contributions),3):
+    #    names.append(contributions[i])
+    #    authors.append(contributions[i+1])
+    #    rate.append(contributions[i+2])
     """
     nodes=[]
     node1 = Node("1", paper_main.name)
@@ -68,6 +73,7 @@ def main():
     visualizer.draw_graph(nodes, positions)
 
     root.mainloop()
+    """
 
 if __name__ == "__main__":
    main()

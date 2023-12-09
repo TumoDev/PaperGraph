@@ -1,4 +1,6 @@
 from .Paper import Paper
 from .GPT import *
-from .Interfaz.GraphVisualizer import GraphVisualizer
 from .Node import Node
+
+from .Interfaz.GraphVisualizer import GraphVisualizer
+from .Interfaz.UploadPaper import UploadPaper
