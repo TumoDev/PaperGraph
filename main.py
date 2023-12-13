@@ -7,7 +7,6 @@ def main():
     app=AplicationController()
     app.run()
    
-
     #view = AplicationView()  # Crear la vista
     #controller = UploadPaperController(view)  # Crear el controlador y pasarle la vista
     #view.set_controller(controller)  # Establecer el controlador en la vista
