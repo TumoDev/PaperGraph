@@ -1,3 +1,13 @@
+# graph_frame.py
+import tkinter as tk
+
+class GraphFrame(tk.Frame):
+    def __init__(self, parent, controller, bg_color="#FFFFFF"):  # Puedes cambiar el color por defecto aquí
+        super().__init__(parent, bg=bg_color)  # Establece el color de fondo
+        self.controller = controller
+
+        # Aquí puedes agregar más widgets o configuraciones a GraphFrame
+"""
 import tkinter as tk
 
 class GraphVisualizer:
@@ -74,3 +84,5 @@ class GraphVisualizer:
                 wx, wy = (x + cx) / 2, (y + cy) / 2
                 self.canvas.create_text(wx, wy, text=weight)
 
+
+"""

@@ -1,0 +1,2 @@
+from .upload_paper_controller import UploadPaperController
+from .aplication_controller import AplicationController

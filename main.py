@@ -1,18 +1,24 @@
-from tkinter.font import names
-from app import Paper
-from app import GPT
-from app.Node import Node
-from app.Interfaz.GraphVisualizer import GraphVisualizer
-from app.Interfaz.UploadPaper import UploadPaper
-import tkinter as tk
-
+from app.Controller import UploadPaperController, AplicationController
 
 def main():
-    print("a")
-    app = UploadPaper()
+    app=UploadPaperController()
     app.run()
+    
+    app=AplicationController()
+    app.run()
+   
+
+    #view = AplicationView()  # Crear la vista
+    #controller = UploadPaperController(view)  # Crear el controlador y pasarle la vista
+    #view.set_controller(controller)  # Establecer el controlador en la vista
+
+    #view.run()
+    #app = AplicationController()
+    #app.run()
+
+
     """
-    #iniciar el objeto paper
+    #iniciar el objeto paper-+-+
     #ruta_paper = ".\\assets\\input_paper\\paper_main.pdf"
     paper_main=Paper(name="Interval Branch-and-Bound algorithms for optimization and constraint satisfaction: a survey and prospects",
                      author="Ignacio Araya1 y Victor Reyes",
