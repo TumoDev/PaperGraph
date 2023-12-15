@@ -1,10 +1,22 @@
-# graph_frame.py
 import tkinter as tk
 
 class GraphFrame(tk.Frame):
-    def __init__(self, parent, controller, bg_color="#FFFFFF"):  # Puedes cambiar el color por defecto aquí
-        super().__init__(parent, bg=bg_color)  # Establece el color de fondo
+    def __init__(self, parent, controller, bg_color="#FFFFFF"):
+        super().__init__(parent, bg=bg_color)
         self.controller = controller
+        self.create_circle()
+
+    def create_circle(self):
+        # Crear un Canvas dentro del Frame
+        self.canvas = tk.Canvas(self, bg=self['bg'], highlightthickness=0)
+        self.canvas.pack(expand=True, fill='both')
+
+        # Dibujar un círculo en el Canvas
+        # Los números (10, 10, 90, 90) son las coordenadas del rectángulo delimitador
+        # del círculo: (x1, y1, x2, y2). (10, 10) es la esquina superior izquierda y
+        # (90, 90) es la esquina inferior derecha del rectángulo delimitador.
+        self.circle = self.canvas.create_oval(10, 10, 90, 90, fill='blue')
+
 
         # Aquí puedes agregar más widgets o configuraciones a GraphFrame
 """

@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, Canvas, Scrollbar, Frame
 from PIL import Image, ImageTk
 from .menu_frame import MenuFrame
 from .graph_frame import GraphFrame
@@ -9,8 +9,7 @@ class AplicationView:
         self.controller = controller
         self.ventana = tk.Tk()
         self.configure_window()
-        self.left_content()
-        self.right_content()
+        self.content()
 
     def show_error(self, error_message):
         messagebox.showerror("Error", error_message)
@@ -28,20 +27,22 @@ class AplicationView:
         self.ventana.iconphoto(True, logo_tk)
 
         self.ventana.protocol("WM_DELETE_WINDOW", self.controller.on_close)
-        
 
-    def left_content(self):
-        self.graph_frame = GraphFrame(self.ventana, self.controller, bg_color="#A7BEBE")
-        # Coloca el graph_frame en la primera columna, y se expande en ambas direcciones
+
+    def content(self):
+        # Create the frame container for GraphFrame and MenuFrame        
+        frames_container = Frame(self.ventana)
+        frames_container.pack(fill="both", expand=True)
+
+        # Set the weight of columns in frames_container
+        frames_container.grid_columnconfigure(0, weight=95)  
+        frames_container.grid_columnconfigure(1, weight=5)
+        frames_container.grid_rowconfigure(0, weight=1)
+
+        # Add the GraphFrame and MenuFrame directly to the frames_container
+        self.graph_frame = GraphFrame(frames_container, self.controller, bg_color="#A7BEBE")
         self.graph_frame.grid(row=0, column=0, sticky="nsew")
+        self.menu_frame = MenuFrame(frames_container, self.controller)
+        self.menu_frame.grid(row=0, column=1, sticky="nsew")
 
-    def right_content(self):
-        self.menu_frame = MenuFrame(self.ventana, self.controller)
-        # Coloca el menu_frame en la segunda columna, ocupando toda la altura
-        self.menu_frame.grid(row=0, column=1, sticky="ns")
-
-        # Configura el contenedor para que la segunda columna se expanda con la ventana
-        self.ventana.grid_columnconfigure(0, weight=1)
-        self.ventana.grid_rowconfigure(0, weight=1)
-    
-    
+      
