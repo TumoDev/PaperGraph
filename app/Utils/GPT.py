@@ -1,19 +1,53 @@
-from pyexpat.errors import messages
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
-import openai, tiktoken, os, json
+import openai, tiktoken, os
+import json , re
 
-
+model_gpt="gpt-3.5-turbo"
+max_tokens=1000
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv('OPENAI_API_KEY')
+       
+def analyze_references(source):
 
-"""
-def extract_tokens(texto, model_gpt="gpt-3.5-turbo"):
+    prompt = f"""Analyze the text fragment '{source}' and:
+    (1) Summarize the main contributions of the source.
+    (2) Provide a detailed analysis of the 10 most relevant citations mentioned in the text. For each relevant citation or group of citations, follow these steps:
+      (a) Identify the citation(s) in its original format (in brackets or author-year format).
+      (b) Explain how the source is related to this citation. Begin with a sentence like: "Related to <citations>, the source..."
+      (c) Classify citations in one of the following categories: Modificates, Enhances, Extends, Inspired by, Alternative Techniques, Other.
+          - If the source introduces a modification, enhancement, or extension to an existing technique, the reference can be categorized as an "Modificates", "Enhances" or "Extends".
+          - If the source's approach is clearly "inspired" by an existing technique, the reference can be categorized as an "Inspired by".
+          - References that offer different methods or solutions to the same problem can be classified as "Alternative Techniques."
+    (3) Write a JSON File: Structure the analyzed data into a JSON format. Use 'relevant_citations' as the key for the array containing each 'citation', its 'relation' and 'contribution' to the current work, and the 'classification' category (Modificates, Enhances, Extends, Alternative Techniques).
+    """
+    # Call the GPT-3.5 Turbo API for a response
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "using your enhanced reference analysis capabilities, and  Structure the analyzed data into a JSON format"},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    generated_response = response['choices'][0]['message']['content']
+
+    try:
+        references_json = json.loads(generated_response)
+        return json.dumps(references_json, indent=4, ensure_ascii=False)
+    except json.JSONDecodeError:
+        return "Error: The response is not in valid JSON format."
+
+def extract_fragment_with_tokens(pdf_rute):
     encoding=tiktoken.encoding_for_model(model_gpt)
+    # Leer el PDF y extraer el texto
+    with open(pdf_rute, 'rb') as archivo_entrada:
+        lector_pdf = PdfReader(archivo_entrada)
+        texto = ""
+        for i in range(len(lector_pdf.pages)):
+            texto += lector_pdf.pages[i].extract_text()
 
     # Obtener las primeras 1000 tokens
     texto = texto.split()
-    print(texto)
     num_words=0
     num_tokens=0
     for words in texto:
@@ -24,52 +58,65 @@ def extract_tokens(texto, model_gpt="gpt-3.5-turbo"):
       num_words+=1
 
     return ' '.join(texto[:num_words])
-"""
+    
+#esta funcion crea lista con indices de referencias
+def list_index_references(json_response):
+    try:
+        # Parsea el JSON
+        data = json.loads(json_response)
 
-import tiktoken
+        extracted_references = []
 
-def extract_tokens(texto, model_gpt="gpt-3.5-turbo", max_tokens=2500):
-    # Inicializar el codificador para un modelo específico, como GPT-4
-    enc = tiktoken.encoding_for_model(model_gpt)
+        # Procesa las citas
+        citations = data.get("relevant_citations", [])
+        for citation in citations:
+            # Extrae la cita
+            citation_text = citation.get("citation", "")
+            # Extrae y limpia los índices de las referencias numéricas
+            numeric_refs = [ref.strip() for ref in citation_text.strip("[]").split(",") if ref.strip()]
+            extracted_references.extend(numeric_refs)
 
-    # Tokenizar el texto
-    tokens = enc.encode(texto)
+        return extracted_references
+    except json.JSONDecodeError:
+        return "Error: La respuesta no está en un formato JSON válido."
+    
+#Esta funcion almacena toda la parte References dentro del pdf
+def text_references_pdf(pdf_path):
+    with open(pdf_path, 'rb') as file:
+        reader = PdfReader(file)
+        references_section = ""
+        start_extracting = False
 
-    # Verificar si el número de tokens solicitado es mayor que la longitud total de tokens
-    n_tokens = min(max_tokens, len(tokens))
+        for page in reader.pages:
+            text = page.extract_text()
 
-    # Reconstruir el texto hasta la cantidad especificada de tokens
-    text = ''.join([enc.decode([token]) for token in tokens[:n_tokens]])
+            if 'References' in text:
+                start_extracting = True
+                text = text.split('References')[1] 
 
-    return text
+            if start_extracting:
+                references_section += text
 
-def extract_contributions(text_pdf_main, text_references, model_gpt="gpt-3.5-turbo-1106"):
+        return references_section
+    
+# Recibe el fragmento de References y los indices de la lista para poder extraer la informacion de cada referencia, almacenandolos en un diccionario
+def info_references(text, reference_numbers):
+    extracted_references = {}
+    for ref_number in reference_numbers:
+        try:
+            start_pattern = f"{ref_number}."
+            end_pattern = f"{int(ref_number) + 1}."
 
-  response = openai.ChatCompletion.create(
-     model=model_gpt,
-     response_format={ "type": "json_object" },
-     messages=[
-      {"role": "system", "content": "Eres un asistente designado a responder en JSON."},    
-      {"role": "user", "content": "Dame el listado de referencias que salen en el siguiente texto'"+ text_pdf_main +"' a continuacion las referencias'"+ text_references +"'"},
-      {"role": "user", "content": "Incluye solo el titulo, nombre, y cantidad de citas dentro del texto"}
+            start_index = text.find(start_pattern)
+            if start_index != -1:
+                end_index = text.find(end_pattern, start_index)
 
-      ]
-  )
-  print(response.choices[0].message.content)
-  data = json.loads(response.choices[0].message.content)
-  lista_referencias = []
-  for referencia in data['referencias']:
-      lista_referencias.append(referencia['titulo'])
-      lista_referencias.append(referencia['nombre'])
-      lista_referencias.append(referencia['citas'])  
-  return lista_referencias
+                if end_index == -1:
+                    end_index = len(text)
 
-#prompt exp regualar 
+                extracted_reference = text[start_index:end_index].strip()
+                extracted_references[ref_number] = extracted_reference
+        except Exception as e:
+            extracted_references[ref_number] = f"Error processing reference: {e}"
 
-"""
-Necesito ayuda para crear una expresión regular que identifique las referencias bibliográficas en un texto. Las referencias tienen un formato específico donde cada una comienza con un número seguido de un punto, luego el nombre del autor o autores, seguido del título del artículo, el nombre de la publicación o conferencia, detalles de la publicación como el volumen y las páginas, y finalmente el año de publicación. Aquí tienes un ejemplo del texto con las referencias:
-
-"1. Araya, I., Neveu, B., Trombettoni, G.: Exploiting common subexpressions in numerical CSPs. In: Principles and Practice of Constraint Programming (CP 2008), pp. 342–357. Springer (2008). 2. Smith, J., Johnson, M.: Advanced algorithms in computational biology. In: Journal of Computational Biology, vol. 15, no. 3, pp. 457–467. Elsevier (2010)."
-
-Por favor, proporciona una expresión regular que pueda usar para identificar y extraer estas referencias de un texto más extenso para crear objetos `Paper` en Python. Cada objeto `Paper` debe contener el nombre del artículo, los autores, y el año de publicación como atributos.
-"""
+    return extracted_references
