@@ -1,13 +1,13 @@
 import tkinter as tk
-from tkinter import messagebox, Canvas, Scrollbar, Frame
+from tkinter import messagebox, Frame
 from PIL import Image, ImageTk
 from .menu_frame import MenuFrame
 from .graph_frame import GraphFrame
 
-class AplicationView:
+class AplicationView():
     def __init__(self, controller):
-        self.controller = controller
-        self.ventana = tk.Tk()
+        self.controller=controller
+        self.ventana=tk.Tk()
         self.configure_window()
         self.content()
 

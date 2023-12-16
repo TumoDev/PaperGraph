@@ -1,9 +1,12 @@
-from app.Controller import UploadPaperController, AplicationController
+from app.Controller import UploadPaperController, AplicationController, LoadingController
 
 def main():
     app=UploadPaperController()
     app.run()
     
+    app=LoadingController()
+    app.run()
+
     app=AplicationController()
     app.run()
    
