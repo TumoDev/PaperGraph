@@ -1,14 +1,11 @@
-from app.Controller import UploadPaperController, AplicationController, LoadingController
+from app.Controller import UploadPaperController, AplicationController, LoadingController, InformationPaperController
 
 def main():
-    app=UploadPaperController()
-    app.run()
+    UploadPaperController().run()
     
-    app=LoadingController()
-    app.run()
-
-    app=AplicationController()
-    app.run()
+    LoadingController().run()
+    
+    AplicationController().run()
    
     #view = AplicationView()  # Crear la vista
     #controller = UploadPaperController(view)  # Crear el controlador y pasarle la vista

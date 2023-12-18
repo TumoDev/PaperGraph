@@ -1,6 +1,6 @@
 import sys
 import threading
-from app.View import LoadingView
+from app.View import LoadingView 
 
 class LoadingController:
     def __init__(self):
@@ -21,16 +21,15 @@ class LoadingController:
         self.view.update_progress(value, text)
 
     def start_loading_process(self):
-        self.execute_next_task()
+        # Inicia todas las tareas en un único hilo
+        threading.Thread(target=self.execute_all_tasks).start()
 
-    def execute_next_task(self):
-        if self.tasks:
-            progress, text, task = self.tasks.pop(0)
+    def execute_all_tasks(self):
+        for progress, text, task in self.tasks:
             self.update_progress(progress, text)
-            threading.Thread(target=lambda: self.run_task(task)).start()
-        else:
-            # Todas las tareas han terminado, cierra la ventana
-            self.destroy_view()
+            task()
+        # Todas las tareas han terminado, cierra la ventana
+        self.view.ventana.after(0, self.destroy_view)
 
     def run_task(self, task):
         task()
@@ -48,14 +47,18 @@ class LoadingController:
         # Ensure that this function does not block, perform operations in a thread if necessary
 
     def search_information_paper(self):
-        # Implement the logic for searching information of the paper here
-        print("Searching for paper information...")
-        # Ensure that this function does not block, perform operations in a thread if necessary
+        from app.Controller import InformationPaperController
+
+        self.view.ventana.withdraw()
+        print("Searching for information...")
+        InformationPaperController().run()
+        self.view.ventana.deiconify()
 
     def search_references(self): #deivit
         # Implement the logic for searching references here
         print("Searching for references...")
         # Ensure that this function does not block, perform operations in a thread if necessary
+        
 
     def search_contributions(self): #deivit
         # Implement the logic for searching contributions here

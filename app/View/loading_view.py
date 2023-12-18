@@ -10,7 +10,6 @@ class LoadingView():
         self.configure_window()
         self.content()
 
-
     def configure_window(self):
         self.ventana.title('Cargando Procesos')
         self.ventana.configure(bg="#263D42")
