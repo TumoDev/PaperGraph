@@ -1,18 +1,19 @@
 import tkinter as tk
 
 class InformationPaperView():
-    def __init__(self, controller):
+    def __init__(self, controller, window):
         self.controller = controller
-        self.ventana = tk.Tk()
+        self.window = window
         self.configure_window()
         self.content()
-
+        
     def configure_window(self):
-        self.ventana.title("Información del Paper")
-        self.ventana.configure(bg="#263D42")
-        self.ventana.geometry('300x100') 
-        self.ventana.resizable(False, False)
+        self.window.title("Información del Paper")
+        self.window.configure(bg="#263D42")
+        self.window.geometry('300x100') 
+        self.window.resizable(False, False)
+        
 
     def content(self):
-        boton_cerrar = tk.Button(self.ventana, text="Cerrar", command=self.ventana.destroy)
+        boton_cerrar = tk.Button(self.window, text="Cerrar", command=self.controller.destroy_view)
         boton_cerrar.pack()

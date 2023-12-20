@@ -7,7 +7,7 @@ from .graph_frame import GraphFrame
 class AplicationView():
     def __init__(self, controller):
         self.controller=controller
-        self.ventana=tk.Tk()
+        self.window=tk.Tk()
         self.configure_window()
         self.content()
 
@@ -15,23 +15,23 @@ class AplicationView():
         messagebox.showerror("Error", error_message)
     
     def configure_window(self):
-        self.ventana.title("PaperGraph")
-        self.ventana.configure(bg="#263D42")
-        self.ventana.geometry("1200x700") 
-        self.ventana.resizable(True, True)
+        self.window.title("PaperGraph")
+        self.window.configure(bg="#263D42")
+        self.window.geometry("1200x700") 
+        self.window.resizable(True, True)
 
         # Add logo to window        
-        ruta_logo = "./assets/images/logo2.png"  
-        logo = Image.open(ruta_logo)
+        route_logo = "./assets/images/logo2.png"  
+        logo = Image.open(route_logo)
         logo_tk = ImageTk.PhotoImage(logo)
-        self.ventana.iconphoto(True, logo_tk)
+        self.window.iconphoto(True, logo_tk)
 
-        self.ventana.protocol("WM_DELETE_WINDOW", self.controller.on_close)
+        self.window.protocol("WM_DELETE_WINDOW", self.controller.on_close)
 
 
     def content(self):
         # Create the frame container for GraphFrame and MenuFrame        
-        frames_container = Frame(self.ventana)
+        frames_container = Frame(self.window)
         frames_container.pack(fill="both", expand=True)
 
         # Set the weight of columns in frames_container
