@@ -1,12 +1,15 @@
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
-import openai, tiktoken, os
+from openai import OpenAI
+import tiktoken, os
 import json , re
 
-model_gpt="gpt-3.5-turbo"
+model_gpt="gpt-3.5-turbo-1106"
 max_tokens=1000
 load_dotenv()
-openai.api_key = os.getenv('OPENAI_API_KEY')
+client = OpenAI(
+    api_key= os.getenv('OPENAI_API_KEY')
+)
        
 def analyze_references(source):
 
@@ -21,18 +24,19 @@ def analyze_references(source):
           - References that offer different methods or solutions to the same problem can be classified as "Alternative Techniques."
     (3) Write a JSON File: Structure the analyzed data into a JSON format. Use 'relevant_citations' as the key for the array containing each 'citation', its 'relation' and 'contribution' to the current work, and the 'classification' category (Modificates, Enhances, Extends, Alternative Techniques).
     """
-    # Call the GPT-3.5 Turbo API for a response
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        response_format={ "type": "json_object" },
         messages=[
-            {"role": "system", "content": "using your enhanced reference analysis capabilities, and  Structure the analyzed data into a JSON format"},
+            {"role": "system", "content": "You are a helpful assistant designed to output JSON"},
             {"role": "user", "content": prompt}
         ]
     )
-    generated_response = response['choices'][0]['message']['content']
+
+    create_response = response.choices[0].message.content
 
     try:
-        references_json = json.loads(generated_response)
+        references_json = json.loads(create_response)
         return json.dumps(references_json, indent=4, ensure_ascii=False)
     except json.JSONDecodeError:
         return "Error: The response is not in valid JSON format."
@@ -80,7 +84,7 @@ def list_index_references(json_response):
     except json.JSONDecodeError:
         return "Error: La respuesta no está en un formato JSON válido."
     
-#Esta funcion almacena toda la parte References dentro del pdf
+#Esta funcion almacena toda la parte de referencias dentro del pdf
 def text_references_pdf(pdf_path):
     with open(pdf_path, 'rb') as file:
         reader = PdfReader(file)
@@ -120,3 +124,31 @@ def info_references(text, reference_numbers):
             extracted_references[ref_number] = f"Error processing reference: {e}"
 
     return extracted_references
+
+#Este prompt identifica los datos titulo, autor, año para las referencias que tiene el diccionario
+def reference_details(dict):
+    prompt = f"""Analyze each academic paper reference provided, extract the following details, and structure them into a JSON format:
+    - Index
+    - Author(s)
+    - Title
+    - Year
+
+    The references are from academic papers and are listed as follows:
+    {dict}
+    """
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo-1106",
+        response_format={ "type": "json_object" },
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    create_response = response.choices[0].message.content
+
+    try:
+        references_json = json.loads(create_response)
+        return json.dumps(references_json, indent=4, ensure_ascii=False)
+    except json.JSONDecodeError:
+        return "Error: The response is not in valid JSON format."
