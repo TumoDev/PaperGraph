@@ -3,9 +3,10 @@ from app.View import LoadingView
 import tkinter as tk
 
 class LoadingController:
-    def __init__(self):
-        self.view = LoadingView(self)
-        self.tasks = [
+    def __init__(self, model):
+        self.model= model
+        self.view=LoadingView(self)
+        self.tasks=[
             (15, "Conectando con GPT...", lambda: self.connect_gpt()),
             (30, "Recopilando Informacion del Paper...", lambda: self.search_information_paper()),
             (45, "Buscando Referencias...", lambda: self.search_references()),
@@ -37,6 +38,7 @@ class LoadingController:
 
     def destroy_view(self):
         self.view.window.destroy()
+        
 
     def connect_gpt(self):
         print("Connecting with GPT...")
@@ -46,9 +48,12 @@ class LoadingController:
     def search_information_paper(self):
         from app.Controller import InformationPaperController
         print("Searching for information...")
+        #paper=gpt_funcion():
+        #if paper:
+        #    self.paper=paper
+        #else:
         secondary_window = tk.Toplevel(self.view.window)
-        paper_controller = InformationPaperController(secondary_window, self.complete_task)
-        paper_controller.run()
+        InformationPaperController(self.model,secondary_window, self.complete_task).run()
         self.complete_task()
 
     def search_references(self):

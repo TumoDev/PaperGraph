@@ -13,6 +13,8 @@ class MenuFrame(tk.Frame):
         padding_x = 20 
         padding_y = 5
         
+        title_p, author_p, date_p=self.controller.display_paper_data()
+
         # Name of the program
         titul_program = tk.Label(self, text="PaperGraph", bg="#263D42", fg="#FFFFFF", font=("Helvetica", 16, "bold"))
         titul_program.grid(row=0, column=0, columnspan=2, sticky="nsew", padx=100, pady=(10, 5))
@@ -21,21 +23,21 @@ class MenuFrame(tk.Frame):
         title = tk.Label(self, text="Título: ", bg="#263D42", fg="#FFFFFF", font=("Helvetica", 10, "bold"))
         title.grid(row=1, column=0, sticky="w", padx=(padding_x, 3), pady=padding_y)
         
-        title_paper = tk.Label(self, text="Aquí va el título del paper", bg="#263D42", fg="#FFFFFF", font=("Helvetica", 8))
+        title_paper = tk.Label(self, text=title_p, bg="#263D42", fg="#FFFFFF", font=("Helvetica", 8))
         title_paper.grid(row=1, column=1, sticky="e", padx=(0, padding_x), pady=padding_y)
 
         # Autor of the Paper
         title = tk.Label(self, text="Autor: ", bg="#263D42", fg="#FFFFFF", font=("Helvetica", 10, "bold"))
         title.grid(row=2, column=0, sticky="w", padx=(padding_x,3), pady=padding_y)
 
-        titulo_author = tk.Label(self, text="Aquí va el Nombre del Autor", bg="#263D42", fg="#FFFFFF", font=("Helvetica", 8))
+        titulo_author = tk.Label(self, text=author_p, bg="#263D42", fg="#FFFFFF", font=("Helvetica", 8))
         titulo_author.grid(row=2, column=1, sticky="e",padx=padding_x, pady=padding_y)
         
         # Date of the Paper
         title = tk.Label(self, text="Date: ", bg="#263D42", fg="#FFFFFF", font=("Helvetica", 10, "bold"))
         title.grid(row=3, column=0, sticky="w", padx=(padding_x,3), pady=padding_y)
         
-        title_date = tk.Label(self, text="23/03/12", bg="#263D42", fg="#FFFFFF", font=("Helvetica", 10))
+        title_date = tk.Label(self, text=date_p, bg="#263D42", fg="#FFFFFF", font=("Helvetica", 10))
         title_date.grid(row=3, column=1, sticky="e",padx=padding_x, pady=padding_y)
         
 
