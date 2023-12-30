@@ -1,68 +1,74 @@
 import sys
-import threading
 from app.View import LoadingView
+import tkinter as tk
 
 class LoadingController:
-    def __init__(self):
-        self.view = LoadingView(self)
-        self.tasks = [
-            (15, "Conectando con GPT...", self.connect_gpt),
-            (30, "Recopilando Informacion del Paper...", self.search_information_paper),
-            (45, "Buscando Referencias...", self.search_references),  
-            (60, "Buscando Contribuciones...", self.search_contributions),  
-            (99, "Armando Grafo...", self.arming_graph)
+    def __init__(self, model):
+        self.model= model
+        self.view=LoadingView(self)
+        self.tasks=[
+            (15, "Conectando con GPT...", lambda: self.connect_gpt()),
+            (30, "Recopilando Informacion del Paper...", lambda: self.search_information_paper()),
+            (45, "Buscando Referencias...", lambda: self.search_references()),
+            (60, "Buscando Contribuciones...", lambda: self.search_contributions()),
+            (99, "Armando Grafo...", lambda: self.arming_graph()),
+            (100, "Cerrando Ventana...", lambda: self.destroy_view())
         ]
-        
+        self.current_task_index = 0
+
     def run(self):
-        self.start_loading_process()
-        self.view.ventana.mainloop()
+        self.execute_next_task()
+        self.view.window.mainloop()
         
     def update_progress(self, value, text):
         self.view.update_progress(value, text)
 
-    def start_loading_process(self):
-        self.execute_next_task()
-
     def execute_next_task(self):
-        if self.tasks:
-            progress, text, task = self.tasks.pop(0)
+        if self.current_task_index < len(self.tasks):
+            progress, text, task = self.tasks[self.current_task_index]
             self.update_progress(progress, text)
-            threading.Thread(target=lambda: self.run_task(task)).start()
-        else:
-            # Todas las tareas han terminado, cierra la ventana
-            self.destroy_view()
+            task()
 
-    def run_task(self, task):
-        task()
-        self.view.ventana.after(0, self.execute_next_task)
+    def complete_task(self):
+        self.current_task_index += 1
+        self.view.window.after(20, self.execute_next_task)
 
     def on_close(self):
         sys.exit()
 
     def destroy_view(self):
-        self.view.ventana.destroy()
+        self.view.window.destroy()
+        
 
-    def connect_gpt(self): #deivit
-        # Implement the logic for connecting to GPT here
+    def connect_gpt(self):
         print("Connecting with GPT...")
-        # Ensure that this function does not block, perform operations in a thread if necessary
+        # Here goes the logic to connect with GPT
+        self.complete_task()
 
     def search_information_paper(self):
-        # Implement the logic for searching information of the paper here
-        print("Searching for paper information...")
-        # Ensure that this function does not block, perform operations in a thread if necessary
+        from app.Controller import InformationPaperController
+        print("Searching for information...")
+        #paper=gpt_funcion():
+        #if paper:
+        #    self.paper=paper
+        #else:
+        secondary_window = tk.Toplevel(self.view.window)
+        InformationPaperController(self.model,secondary_window, self.complete_task).run()
+        self.complete_task()
 
-    def search_references(self): #deivit
-        # Implement the logic for searching references here
+    def search_references(self):
         print("Searching for references...")
-        # Ensure that this function does not block, perform operations in a thread if necessary
+        # Reference search logic
+        self.complete_task()
 
-    def search_contributions(self): #deivit
-        # Implement the logic for searching contributions here
+    def search_contributions(self):
         print("Searching for contributions...")
-        # Ensure that this function does not block, perform operations in a thread if necessary
+        # Contribution search logic
+        self.complete_task()
 
     def arming_graph(self):
-        # Implement the logic for graph construction here
         print("Constructing graph...")
-        # Ensure that this function does not block, perform operations in a thread if necessary
+        # Logic for constructing the graph
+        self.complete_task()
+
+    
