@@ -10,9 +10,8 @@ class LoadingController:
         self.model= model
         self.view=LoadingView(self)
         self.tasks=[
-            #(25, "Conectando con GPT...", lambda: self.connect_GPT()),
-            (50, "Recopilando Informacion del Paper...", lambda: self.search_information_paper()),
-            (75, "Buscando Referencias y contribuciones...", lambda: self.search_references_and_contributions()),
+            (33, "Recopilando Informacion del Paper...", lambda: self.search_information_paper()),
+            (66, "Buscando Referencias y contribuciones...", lambda: self.search_references_and_contributions()),
             (100, "Cerrando Ventana...", lambda: self.destroy_view())
         ]
         self.current_task_index = 0
@@ -39,12 +38,6 @@ class LoadingController:
 
     def destroy_view(self):
         self.view.window.destroy()
-        
-
-    def connect_GPT(self):
-        print("Connecting with GPT...")
-        # Here goes the logic to connect with GPT
-        self.complete_task()
 
     def search_information_paper(self):
         from app.Controller import InformationPaperController
@@ -59,7 +52,6 @@ class LoadingController:
 
     def search_references_and_contributions(self):
         print("Searching references and contributions...")
-        #print(self.model.get_paper(self.model.get_current_id_node))
         # Fragmento inicial con tokens
         introduct_fragment = gpt.extract_fragment_with_tokens('assets/papers/input_paper/archivo.pdf')
 
@@ -78,10 +70,7 @@ class LoadingController:
         # Extraer detalles de las referencias y crear JSON final
         references = gpt.reference_details(diccionario)
         dict_references = json.loads(references)
-        print(dict_references)
-        print("_________________________________________")
-        print(references)
-
+    
         for ref in dict_references["references"]:
             paper = Paper(title=ref["title"], author=ref["author"], date=str(ref["year"]))
             self.model.add_paper(paper)
