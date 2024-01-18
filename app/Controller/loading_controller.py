@@ -82,8 +82,8 @@ class LoadingController:
         print("_________________________________________")
         print(references)
 
-        for ref in references["references"].values():
-            paper = Paper(title=ref["title"], author=ref["author"], date=(ref["year"]))
+        for ref in dict_references["references"]:
+            paper = Paper(title=ref["title"], author=ref["author"], date=str(ref["year"]))
             self.model.add_paper(paper)
         
         self.complete_task()
