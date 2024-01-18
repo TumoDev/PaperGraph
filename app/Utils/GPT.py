@@ -1,18 +1,18 @@
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from openai import OpenAI
-import tiktoken, os
-import json , re
+import tiktoken
+import json
+import os
 
-model_gpt="gpt-3.5-turbo-1106"
-max_tokens=1000
+MODEL_GPT="gpt-3.5-turbo-1106"
+MAX_TOKENS=1000
+
 load_dotenv()
-client = OpenAI(
-    api_key= os.getenv('OPENAI_API_KEY')
-)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=OPENAI_API_KEY)
        
 def analyze_references(source):
-
     prompt = f"""Analyze the text fragment '{source}' and:
     (1) Summarize the main contributions of the source.
     (2) Provide a detailed analysis of the 10 most relevant citations mentioned in the text. For each relevant citation or group of citations, follow these steps:
@@ -42,7 +42,7 @@ def analyze_references(source):
         return "Error: The response is not in valid JSON format."
 
 def extract_fragment_with_tokens(pdf_rute):
-    encoding=tiktoken.encoding_for_model(model_gpt)
+    encoding=tiktoken.encoding_for_model(MODEL_GPT)
     # Leer el PDF y extraer el texto
     with open(pdf_rute, 'rb') as archivo_entrada:
         lector_pdf = PdfReader(archivo_entrada)
@@ -57,7 +57,7 @@ def extract_fragment_with_tokens(pdf_rute):
     for words in texto:
       tokens=len(encoding.encode(text=words))
       num_tokens+=tokens
-      if num_tokens>=max_tokens:
+      if num_tokens>=MAX_TOKENS:
         break
       num_words+=1
 
