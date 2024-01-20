@@ -1,6 +1,6 @@
 import sys
 from app.View import LoadingView
-from app.Utils import GPT as gpt
+from app.Utils import GPT
 from app.Utils import Paper
 import tkinter as tk
 import json
@@ -52,27 +52,9 @@ class LoadingController:
 
     def search_references_and_contributions(self):
         print("Searching references and contributions...")
-        # Fragmento inicial con tokens
-        introduct_fragment = gpt.extract_fragment_with_tokens('assets/papers/input_paper/archivo.pdf')
-
-        # Analizar referencias y crear JSON de contribuciones e indices
-        contributions = gpt.analyze_references(introduct_fragment)
-
-        # Crear lista con índices de referencias
-        array_indices = gpt.list_index_references(contributions)
-
-        # Almacenar parte de referencias del PDF
-        text_references = gpt.text_references_pdf('assets/papers/input_paper/archivo.pdf')
-
-        # Extraer información de las referencias basado en los índices
-        diccionario = gpt.info_references(text_references, array_indices)
-
-        # Extraer detalles de las referencias y crear JSON final
-        references = gpt.reference_details(diccionario)
-        dict_references = json.loads(references)
-    
-        for ref in dict_references["references"]:
+        references = GPT.Gpt('assets/papers/input_paper/archivo.pdf')
+        for ref in references["references"]:
             paper = Paper(title=ref["title"], author=ref["author"], date=str(ref["year"]))
             self.model.add_paper(paper)
-        
+                
         self.complete_task()
