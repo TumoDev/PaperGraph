@@ -1,100 +1,58 @@
 import tkinter as tk
+from tkinter import Frame, Scrollbar
+import networkx as nx
 
-class GraphFrame(tk.Frame):
-    def __init__(self, parent, controller, bg_color="#FFFFFF"):
+class GraphFrame(Frame):
+    def __init__(self, parent, controller, bg_color="#A7BEBE"):
         super().__init__(parent, bg=bg_color)
         self.controller = controller
-        self.create_circle()
+        
+        # Crear un Canvas con barras de desplazamiento
+        self.canvas = tk.Canvas(self, bg="lightgray")
+        self.v_scroll = Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.h_scroll = Scrollbar(self, orient="horizontal", command=self.canvas.xview)
+        self.canvas.configure(yscrollcommand=self.v_scroll.set, xscrollcommand=self.h_scroll.set)
 
-    def create_circle(self):
-        # Crear un Canvas dentro del Frame
-        self.canvas = tk.Canvas(self, bg=self['bg'], highlightthickness=0)
-        self.canvas.pack(expand=True, fill='both')
+        # Posicionar los elementos en el Frame
+        self.v_scroll.pack(side=tk.RIGHT, fill="y")
+        self.h_scroll.pack(side=tk.BOTTOM, fill="x")
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        # Dibujar un círculo en el Canvas
-        # Los números (10, 10, 90, 90) son las coordenadas del rectángulo delimitador
-        # del círculo: (x1, y1, x2, y2). (10, 10) es la esquina superior izquierda y
-        # (90, 90) es la esquina inferior derecha del rectángulo delimitador.
-        self.circle = self.canvas.create_oval(10, 10, 90, 90, fill='blue')
+        self.canvas.bind('<Configure>', self.on_canvas_configure)
+        self.draw_graph()
 
+    def on_canvas_configure(self, event=None):
+        # Ajustar la región de desplazamiento al tamaño del Canvas
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
-        # Aquí puedes agregar más widgets o configuraciones a GraphFrame
-"""
-import tkinter as tk
+    def draw_graph(self):
+        self.canvas.delete("all")  # Limpiar el canvas antes de dibujar
+        
+        graph = self.controller.model.graph
+        pos = nx.spring_layout(graph)  # Posiciones de los nodos
 
-class GraphVisualizer:
-    def __init__(self, root):
-        self.root = root
-        self.canvas = tk.Canvas(root, width=800, height=500, bg="lightgray")
-        self.canvas.pack(fill=tk.BOTH, expand=True)
-        self.node_tooltips = {}
-        self.tooltip_label = tk.Label(root, text="", bg="yellow")
-        self.setup_bindings()
+        # Escalar y centrar el grafo (ajuste el factor de escala y la posición inicial aquí)
+        scale_x, scale_y = 300, 300  # Factores de escala más bajos reducen la distancia
+        offset_x, offset_y = 15000, 15000  # Posición inicial para centrar el grafo
+        
+        for node, (x, y) in pos.items():
+            x = x * scale_x + offset_x  # Ajuste de escala y posición
+            y = y * scale_y + offset_y
+            # Dibujar el nodo como un círculo
+            self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="white", outline="black")
+            # Obtener el objeto Paper asociado al nodo y usar su título como texto del nodo
+            paper = graph.nodes[node]['paper']
+            paper_title = paper.get_title
+            self.canvas.create_text(x, y, text=paper_title)
 
-    def setup_bindings(self):
-        self.canvas.bind("<ButtonPress-1>", self.on_press)
-        self.canvas.bind("<B1-Motion>", self.on_drag)
-        self.canvas.bind("<Motion>", self.on_canvas_motion)
+        for edge in graph.edges():
+            start_pos, end_pos = pos[edge[0]], pos[edge[1]]
+            start_pos = (start_pos[0] * scale_x + offset_x, start_pos[1] * scale_y + offset_y)
+            end_pos = (end_pos[0] * scale_x + offset_x, end_pos[1] * scale_y + offset_y)
+            # Dibujar las aristas
+            self.canvas.create_line(start_pos, end_pos, fill="black", width=1)
 
-    def on_canvas_motion(self, event):
-        item = self.canvas.find_closest(event.x, event.y)
-        tags = self.canvas.gettags(item)
-        for tag in tags:
-            if "node" in tag:
-                node_info = self.node_tooltips.get(tag, None)
-                if node_info:
-                    bbox = self.canvas.bbox(item)
-                    tooltip_x = (bbox[0] + bbox[2]) / 2
-                    tooltip_y = bbox[1] - 10
-                    self.tooltip_label.config(text=node_info)
-                    self.tooltip_label.place(x=tooltip_x, y=tooltip_y, anchor="s")
-                break
-        else:
-            self.tooltip_label.place_forget()
-
-    def on_press(self, event):
-        self.canvas.scan_mark(event.x, event.y)
-
-    def on_drag(self, event):
-        self.canvas.scan_dragto(event.x, event.y, gain=1)
-
-    def generate_positions_by_level(self, root, canvas_width, canvas_height):
-        levels = {}
-        queue = [(root, 0)]
-        while queue:
-            current, level = queue.pop(0)
-            if level not in levels:
-                levels[level] = []
-            levels[level].append(current)
-            for child in current.children:
-                queue.append((child, level + 1))
-
-        max_level = max(levels.keys())
-        level_distance = canvas_height / (max_level + 1)
-        positions = {}
-
-        for level, nodes in levels.items():
-            num_nodes = len(nodes)
-            for i, node in enumerate(nodes):
-                x = canvas_width * (i + 1) / (num_nodes + 1)
-                y = (level + 1) * level_distance
-                positions[node.val] = (x, y)
-
-        return positions
-
-    def draw_graph(self, nodes, positions):
-        for node in nodes:
-            x, y = positions[node.val]
-            oval = self.canvas.create_oval(x - 15, y - 15, x + 15, y + 15, fill="white", tags=f"node{node.val}")
-            self.canvas.create_text(x, y, text=node.val)
-            self.node_tooltips[f"node{node.val}"] = node.tooltip
-            
-            for i, child in enumerate(node.children):
-                cx, cy = positions[child.val]
-                self.canvas.create_line(x, y, cx, cy)
-                weight = node.weights[i]
-                wx, wy = (x + cx) / 2, (y + cy) / 2
-                self.canvas.create_text(wx, wy, text=weight)
+        self.on_canvas_configure()  # Ajustar la región de desplazamiento al contenido
 
 
-"""
+
