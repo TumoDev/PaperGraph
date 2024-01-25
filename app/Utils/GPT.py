@@ -161,5 +161,5 @@ def Gpt(path):
     references_info_dict = info_references(text_references_fragment, indices_array)
     detailed_references = reference_details(references_info_dict)
     references_dict = json.loads(detailed_references)
-    
+
     return references_dict 
