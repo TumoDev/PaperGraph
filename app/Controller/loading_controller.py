@@ -55,7 +55,7 @@ class LoadingController:
         references = GPT.Gpt('assets/papers/input_paper/archivo.pdf')
         for ref in references["references"]:
             print(ref)
-            paper = Paper(title=ref["title"], author=ref["author"], date=str(ref["year"]))
+            paper = Paper(title=ref["title"], author=ref["author"], date=(ref["year"]))
             self.model.add_paper(paper)
                 
         self.complete_task()

@@ -40,10 +40,10 @@ class GraphFrame(Frame):
             y = y * scale_y + offset_y
             # Dibujar el nodo como un círculo
             self.canvas.create_oval(x - 20, y - 20, x + 20, y + 20, fill="white", outline="black")
-            # Obtener el objeto Paper asociado al nodo y usar su título como texto del nodo
-            paper = graph.nodes[node]['paper']
-            paper_title = paper.get_title
-            self.canvas.create_text(x, y, text=paper_title)
+            # Acceder al atributo 'label' del nodo para el texto
+            label = graph.nodes[node].get('label', str(node))
+            print(label)
+            self.canvas.create_text(x, y, text=label)
 
         for edge in graph.edges():
             start_pos, end_pos = pos[edge[0]], pos[edge[1]]
