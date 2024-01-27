@@ -53,9 +53,9 @@ class LoadingController:
     def search_references_and_contributions(self):
         print("Searching references and contributions...")
         references = GPT.Gpt('assets/papers/input_paper/archivo.pdf')
-        for ref in references["references"]:
-            print(ref)
-            paper = Paper(title=ref["title"], author=ref["author"], date=str(ref["year"]))
+        for ref_index, ref_details in references.items():
+            paper = Paper(title=str(ref_details["title"]), 
+                        author=str(ref_details["author"]), 
+                        date=str(ref_details["year"]))
             self.model.add_paper(paper)
-                
         self.complete_task()

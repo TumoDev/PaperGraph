@@ -26,7 +26,7 @@ def Gpt(path):
         (3) Write a JSON File: Structure the analyzed data into a JSON format. Use 'relevant_citations' as the key for the array containing each 'citation', its 'relation' and 'contribution' to the current work, and the 'classification' category (Modificates, Enhances, Extends, Alternative Techniques).
         """
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
+            model=MODEL_GPT,
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": "You are a helpful assistant designed to output JSON"},
@@ -42,27 +42,27 @@ def Gpt(path):
         except json.JSONDecodeError:
             return "Error: The response is not in valid JSON format."
 
-    def extract_fragment_with_tokens(pdf_rute):
-        encoding=tiktoken.encoding_for_model(MODEL_GPT)
+    def extract_fragment_with_tokens(path):
+        encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
         # Leer el PDF y extraer el texto
-        with open(pdf_rute, 'rb') as archivo_entrada:
+        with open(path, 'rb') as archivo_entrada:
             lector_pdf = PdfReader(archivo_entrada)
             texto = ""
             for i in range(len(lector_pdf.pages)):
-                texto += lector_pdf.pages[i].extract_text()
+                texto += lector_pdf.pages[i].extract_text() if lector_pdf.pages[i].extract_text() else ""
 
-        # Obtener las primeras 1000 tokens
-        texto = texto.split()
-        num_words=0
-        num_tokens=0
-        for words in texto:
-            tokens=len(encoding.encode(text=words))
-            num_tokens+=tokens
-            if num_tokens>=MAX_TOKENS:
+        # Obtener las primeras MAX_TOKENS tokens
+        palabras = texto.split()
+        num_tokens = 0
+        num_words = 0
+        for word in palabras:
+            tokens = len(encoding.encode(text=word))
+            if num_tokens + tokens > MAX_TOKENS:
                 break
-        num_words+=1
+            num_tokens += tokens
+            num_words += 1
 
-        return ' '.join(texto[:num_words])
+        return ' '.join(palabras[:num_words])
         
     #esta funcion crea lista con indices de referencias
     def list_index_references(json_response):
@@ -86,8 +86,8 @@ def Gpt(path):
             return "Error: La respuesta no está en un formato JSON válido."
         
     #Esta funcion almacena toda la parte de referencias dentro del pdf
-    def text_references_pdf(pdf_path):
-        with open(pdf_path, 'rb') as file:
+    def text_references_pdf(path):
+        with open(path, 'rb') as file:
             reader = PdfReader(file)
             references_section = ""
             start_extracting = False
@@ -128,17 +128,19 @@ def Gpt(path):
 
     #Este prompt identifica los datos titulo, autor, año para las referencias que tiene el diccionario
     def reference_details(dict):
-        prompt = f"""Analyze each academic paper reference provided, extract the following details, and structure them into a JSON format:
-        - Index
-        - Author(s)
-        - Title
-        - Year
+        prompt = f"""Given a list of academic paper references, extract and structure the details into a consistent JSON format with the following keys for each reference:
+        - index (the reference index or ID)
+        - author (the author or authors of the work)
+        - title (the title of the work)
+        - year (the publication year)
 
-        The references are from academic papers and are listed as follows:
+        Here are the references:
         {dict}
-        """
+
+        Format the details as a JSON object with keys 'index', 'author', 'title', and 'year' for each reference.
+    """
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo-1106",
+            model=MODEL_GPT,
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
