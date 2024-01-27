@@ -160,6 +160,7 @@ def Gpt(path):
     indices_array = list_index_references(contributions_info)  # Index references
     text_references_fragment = text_references_pdf(path)  # PDF text fragment
     references_info_dict = info_references(text_references_fragment, indices_array)
+    print(references_info_dict)
     detailed_references = reference_details(references_info_dict)
     print(detailed_references)
     references_dict = json.loads(detailed_references)
