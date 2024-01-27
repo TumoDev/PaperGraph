@@ -27,6 +27,7 @@ def Gpt(path):
         """
         response = client.chat.completions.create(
             model=MODEL_GPT,
+            temperature=0.2,
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": "You are a helpful assistant designed to output JSON"},
@@ -128,19 +129,16 @@ def Gpt(path):
 
     #Este prompt identifica los datos titulo, autor, año para las referencias que tiene el diccionario
     def reference_details(dict):
-        prompt = f"""Given a list of academic paper references, extract and structure the details into a consistent JSON format with the following keys for each reference:
-        - index (the reference index or ID)
-        - author (the author or authors of the work)
-        - title (the title of the work)
-        - year (the publication year)
+        prompt = f"""Convert the following academic paper references into a structured JSON format. Each reference should include the keys 'index', 'author', 'title', and 'year' with their corresponding values. The output should be a JSON object with a single key 'references', which holds an array of reference objects.
 
         Here are the references:
         {dict}
 
-        Format the details as a JSON object with keys 'index', 'author', 'title', and 'year' for each reference.
-    """
+        Please generate the JSON object based on the provided references, ensuring to maintain the specified structure and key names exactly.
+        """
         response = client.chat.completions.create(
             model=MODEL_GPT,
+            temperature=0.2,
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
@@ -157,11 +155,13 @@ def Gpt(path):
             return "Error: The response is not in valid JSON format."
         
     intro_fragment = extract_fragment_with_tokens(path)  # Introduction fragment
+    print(intro_fragment)
     contributions_info = analyze_references(intro_fragment)  # Contributions and references analysis
     indices_array = list_index_references(contributions_info)  # Index references
     text_references_fragment = text_references_pdf(path)  # PDF text fragment
     references_info_dict = info_references(text_references_fragment, indices_array)
     detailed_references = reference_details(references_info_dict)
+    print(detailed_references)
     references_dict = json.loads(detailed_references)
 
     return references_dict 
