@@ -12,18 +12,19 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-def Gpt(path):     
+def indentify_references(path):
     def analyze_references(source):
-        prompt = f"""Analyze the text fragment '{source}' and:
+        prompt = f"""
+        Analyze the text fragment '{source}' and:
         (1) Summarize the main contributions of the source.
         (2) Provide a detailed analysis of the 10 most relevant citations mentioned in the text. For each relevant citation or group of citations, follow these steps:
-        (a) Identify the citation(s) in its original format (in brackets or author-year format).
-        (b) Explain how the source is related to this citation. Begin with a sentence like: "Related to <citations>, the source..."
-        (c) Classify citations in one of the following categories: Modificates, Enhances, Extends, Inspired by, Alternative Techniques, Other.
-            - If the source introduces a modification, enhancement, or extension to an existing technique, the reference can be categorized as an "Modificates", "Enhances" or "Extends".
-            - If the source's approach is clearly "inspired" by an existing technique, the reference can be categorized as an "Inspired by".
-            - References that offer different methods or solutions to the same problem can be classified as "Alternative Techniques."
-        (3) Write a JSON File: Structure the analyzed data into a JSON format. Use 'relevant_citations' as the key for the array containing each 'citation', its 'relation' and 'contribution' to the current work, and the 'classification' category (Modificates, Enhances, Extends, Alternative Techniques).
+            (a) Identify the citation(s) in its original format (in brackets or author-year format).
+            (b) Clearly articulate the contribution of the source in relation to each citation. Begin with a sentence like: "In relation to [citation], the contribution of the source is..." and then detail how the source adds to, contrasts with, or builds upon the cited work. This should focus on the specific aspects of the source’s work that are directly influenced by the citation.
+            (c) Classify citations in one of the following categories: Modifies, Enhances, Extends, Inspired by, Alternative Techniques, Other.
+                - If the source introduces a modification, enhancement, or extension to an existing technique, the reference can be categorized as "Modifies", "Enhances" or "Extends".
+                - If the source's approach is clearly "inspired" by an existing technique, the reference can be categorized as "Inspired by".
+                - References that offer different methods or solutions to the same problem can be classified as "Alternative Techniques."
+        (3) Write a JSON File: Structure the analyzed data into a JSON format. Use 'relevant_citations' as the key for the array containing each 'citation', its 'relation' and 'contribution' to the current work, and the 'classification' category (Modifies, Enhances, Extends, Alternative Techniques).
         """
         response = client.chat.completions.create(
             model=MODEL_GPT,
@@ -64,7 +65,13 @@ def Gpt(path):
             num_words += 1
 
         return ' '.join(palabras[:num_words])
-        
+    
+    intro_fragment = extract_fragment_with_tokens(path)  # Introduction fragment
+    contributions_info = analyze_references(intro_fragment)  # Contributions and references analysis
+    #print(contributions_info)
+    return contributions_info
+
+def Gpt(path, analysis):          
     #esta funcion crea lista con indices de referencias
     def list_index_references(json_response):
         try:
@@ -138,7 +145,7 @@ def Gpt(path):
         """
         response = client.chat.completions.create(
             model=MODEL_GPT,
-            temperature=0.2,
+            temperature=0.1,
             response_format={ "type": "json_object" },
             messages=[
                 {"role": "system", "content": "You are a helpful assistant designed to output JSON."},
@@ -154,15 +161,11 @@ def Gpt(path):
         except json.JSONDecodeError:
             return "Error: The response is not in valid JSON format."
         
-    intro_fragment = extract_fragment_with_tokens(path)  # Introduction fragment
-    print(intro_fragment)
-    contributions_info = analyze_references(intro_fragment)  # Contributions and references analysis
-    indices_array = list_index_references(contributions_info)  # Index references
+    indices_array = list_index_references(analysis)  # Index references
     text_references_fragment = text_references_pdf(path)  # PDF text fragment
     references_info_dict = info_references(text_references_fragment, indices_array)
-    print(references_info_dict)
     detailed_references = reference_details(references_info_dict)
-    print(detailed_references)
+    #print(detailed_references)
     references_dict = json.loads(detailed_references)
 
     return references_dict 

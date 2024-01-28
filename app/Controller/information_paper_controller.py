@@ -23,6 +23,6 @@ class InformationPaperController:
         paper = Paper(title,author,date)
         id = paper.get_id
         self.model.set_current_id_node(id)
-        self.model.add_paper(paper)
+        self.model.add_paper(paper, None)
         self.destroy_view()
         

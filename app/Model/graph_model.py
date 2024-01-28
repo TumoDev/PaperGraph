@@ -22,14 +22,14 @@ class GraphModel:
     def set_current_id_node(self, id):
         self.id_current_node = id
 
-    def add_paper(self, paper):
+    def add_paper(self, paper, contribution):
         # Usar el título del paper como clave del nodo
         paper_title = paper.get_title
         self.graph.add_node(paper_title, paper=paper)
 
         # Si el nodo actual está establecido, agregar una arista
         if self.id_current_node is not None:
-            self.graph.add_edge(self.id_current_node, paper_title)
+            self.graph.add_edge(self.id_current_node, paper_title, contribution=contribution)
         else:
             self.id_current_node = paper_title  # Establecer el título del paper como el nodo actual
 
