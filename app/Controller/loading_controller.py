@@ -11,7 +11,7 @@ class LoadingController:
         self.view=LoadingView(self)
         self.tasks=[
             (33, "Recopilando Informacion del Paper...", lambda: self.search_information_paper()),
-            (66, "Buscando Referencias y contribuciones...", lambda: self.search_references_and_contributions()),
+            #(66, "Buscando Referencias y contribuciones...", lambda: self.search_references_and_contributions()),
             (100, "Cerrando Ventana...", lambda: self.destroy_view())
         ]
         self.current_task_index = 0

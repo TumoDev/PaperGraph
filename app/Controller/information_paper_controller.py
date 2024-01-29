@@ -1,6 +1,8 @@
 from app.View import InformationPaperView
 from app.Utils import Paper
+from app.Utils import GPT
 import sys
+
 
 class InformationPaperController:
     def __init__(self, model, window, on_close_callback=None):
@@ -21,6 +23,8 @@ class InformationPaperController:
     
     def create_paper(self,title,author,date):
         paper = Paper(title,author,date)
+        content=GPT.extract_fragment_with_tokens('assets/papers/input_paper/archivo.pdf')
+        paper.set_content(content)
         id = paper.get_id
         self.model.set_current_id_node(id)
         self.model.add_paper(paper, None)

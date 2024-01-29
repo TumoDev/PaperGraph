@@ -35,15 +35,13 @@ class Paper:
     @property
     def get_references(self):
         return self.references
-
-    #def set_content(self):
-    #    texto_completo=self.extract_complete_text()
-    #    self.content=GPT.extract_tokens(texto_completo)
-
-    #def set_references(self,content):
-    #    self.references=content
+    
+    def set_content(self, content):
+        self.content=content
     
     def create_identifier(self):
         author_clean = self.author.split()[0].replace(" ", "").lower()
         title_word = self.title.split()[0].lower()
         return f"{author_clean}-{self.date}-{title_word}"
+    
+    

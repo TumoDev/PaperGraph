@@ -12,6 +12,28 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+def extract_fragment_with_tokens(path):
+        encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
+        # Leer el PDF y extraer el texto
+        with open(path, 'rb') as archivo_entrada:
+            lector_pdf = PdfReader(archivo_entrada)
+            texto = ""
+            for i in range(len(lector_pdf.pages)):
+                texto += lector_pdf.pages[i].extract_text() if lector_pdf.pages[i].extract_text() else ""
+
+        # Obtener las primeras MAX_TOKENS tokens
+        palabras = texto.split()
+        num_tokens = 0
+        num_words = 0
+        for word in palabras:
+            tokens = len(encoding.encode(text=word))
+            if num_tokens + tokens > MAX_TOKENS:
+                break
+            num_tokens += tokens
+            num_words += 1
+
+        return ' '.join(palabras[:num_words])
+
 def indentify_references(path):
     def analyze_references(source):
         prompt = f"""
@@ -43,28 +65,6 @@ def indentify_references(path):
             return json.dumps(references_json, indent=4, ensure_ascii=False)
         except json.JSONDecodeError:
             return "Error: The response is not in valid JSON format."
-
-    def extract_fragment_with_tokens(path):
-        encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
-        # Leer el PDF y extraer el texto
-        with open(path, 'rb') as archivo_entrada:
-            lector_pdf = PdfReader(archivo_entrada)
-            texto = ""
-            for i in range(len(lector_pdf.pages)):
-                texto += lector_pdf.pages[i].extract_text() if lector_pdf.pages[i].extract_text() else ""
-
-        # Obtener las primeras MAX_TOKENS tokens
-        palabras = texto.split()
-        num_tokens = 0
-        num_words = 0
-        for word in palabras:
-            tokens = len(encoding.encode(text=word))
-            if num_tokens + tokens > MAX_TOKENS:
-                break
-            num_tokens += tokens
-            num_words += 1
-
-        return ' '.join(palabras[:num_words])
     
     intro_fragment = extract_fragment_with_tokens(path)  # Introduction fragment
     contributions_info = analyze_references(intro_fragment)  # Contributions and references analysis

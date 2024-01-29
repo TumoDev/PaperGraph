@@ -15,4 +15,4 @@ class AplicationController:
 
     def display_paper_data(self):
         paper=self.model.get_first_paper()
-        return paper.get_title, paper.get_author, paper.get_date
+        return paper.get_title, paper.get_author, paper.get_date, paper.get_content

@@ -10,9 +10,9 @@ def main():
     model=GraphModel()
 
     LoadingController(model).run()
-
+    model.print_graph()
     AplicationController(model).run()
-
+    
    
 if __name__ == "__main__":
    main()
